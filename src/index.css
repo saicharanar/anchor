@@ -653,3 +653,547 @@ button {
     border-radius: 24px;
   }
 }
+
+.daily-tracker {
+  max-width: 620px;
+  margin: 0 auto;
+}
+
+.daily-header {
+  padding: 4px 2px 18px;
+}
+
+.daily-header h1 {
+  margin: 0;
+  color: #303332;
+  font-size: clamp(30px, 8vw, 40px);
+  font-weight: 520;
+  letter-spacing: 0;
+  line-height: 1.1;
+}
+
+.daily-header p {
+  margin: 8px 0 0;
+  color: #777a76;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.daily-mode-control {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+  border-radius: 28px;
+  background: rgba(17, 19, 19, 0.07);
+  padding: 5px;
+  box-shadow: inset 0 1px 1px rgba(17, 19, 19, 0.04);
+}
+
+.daily-mode-control button {
+  min-height: 46px;
+  border-radius: 23px;
+  color: #7c7f7b;
+  font-size: 15px;
+  font-weight: 700;
+  transition:
+    transform 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease,
+    color 140ms ease;
+}
+
+.daily-mode-control button.active {
+  background: rgba(255, 255, 255, 0.92);
+  color: #111313;
+  box-shadow:
+    0 8px 22px rgba(17, 19, 19, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.daily-mode-control button:active {
+  transform: scale(0.97);
+}
+
+.daily-mode-control button:focus-visible,
+.finance-toggle button:focus-visible,
+.inline-create-row button:focus-visible,
+.goal-create-row > button:focus-visible,
+.amount-row button:focus-visible,
+.daily-row:focus-visible,
+.habit-week button:focus-visible,
+.goal-card-header:focus-visible,
+.goal-task-row:focus-visible,
+.goal-task-create button:focus-visible,
+.daily-bottom-nav a:focus-visible {
+  outline: 2px solid rgba(17, 19, 19, 0.22);
+  outline-offset: 3px;
+}
+
+.daily-panel {
+  margin-top: 16px;
+}
+
+.inline-create-row,
+.goal-create-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 58px;
+  gap: 10px;
+  align-items: center;
+}
+
+.goal-create-row {
+  grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.72fr) 58px;
+}
+
+.inline-create-row input,
+.goal-create-row input,
+.transaction-create input {
+  min-height: 58px;
+  min-width: 0;
+  border: 1px solid rgba(17, 19, 19, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.68);
+  padding: 0 22px;
+  color: #303332;
+  font-size: 18px;
+  outline: none;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
+}
+
+.inline-create-row input::placeholder,
+.goal-create-row input::placeholder,
+.transaction-create input::placeholder {
+  color: #a1a4a0;
+}
+
+.inline-create-row button,
+.goal-create-row > button,
+.amount-row button {
+  display: flex;
+  height: 58px;
+  width: 58px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 23px;
+  background: #050505;
+  color: #ffffff;
+  box-shadow: 0 12px 28px rgba(5, 5, 5, 0.14);
+  transition: transform 120ms ease;
+}
+
+.inline-create-row button:active,
+.goal-create-row > button:active,
+.amount-row button:active {
+  transform: scale(0.94);
+}
+
+.daily-list,
+.habit-stack,
+.goal-stack,
+.transaction-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.daily-row {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(17, 19, 19, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.58);
+  padding: 12px 18px;
+  color: #333635;
+  text-align: left;
+  font-size: 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.daily-check {
+  display: flex;
+  height: 28px;
+  width: 28px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1.5px solid rgba(17, 19, 19, 0.2);
+  color: transparent;
+}
+
+.daily-check.complete {
+  border-color: #050505;
+  background: #050505;
+  color: #ffffff;
+}
+
+.daily-empty {
+  margin: 0;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.48);
+  padding: 22px;
+  color: #777a76;
+  font-size: 15px;
+}
+
+.habit-card,
+.goal-tracker-card,
+.balance-card,
+.transaction-create,
+.summary-panel,
+.summary-tile {
+  border: 1px solid rgba(17, 19, 19, 0.08);
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.58);
+  box-shadow:
+    0 16px 46px rgba(17, 19, 19, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.64);
+}
+
+.habit-card {
+  padding: 20px;
+}
+
+.habit-card-header,
+.goal-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.habit-card h2 {
+  margin: 0;
+  color: #333635;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.habit-card-header span {
+  color: #8b8e89;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.habit-week {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.habit-week button {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  color: #a0a39f;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.habit-week strong {
+  display: flex;
+  height: 36px;
+  width: 36px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  background: rgba(17, 19, 19, 0.07);
+  color: transparent;
+}
+
+.habit-week button.done strong {
+  background: #050505;
+  color: #ffffff;
+}
+
+.goal-tracker-card {
+  overflow: hidden;
+}
+
+.goal-card-header {
+  width: 100%;
+  padding: 18px;
+  text-align: left;
+}
+
+.goal-card-header > span:nth-child(2) {
+  min-width: 0;
+  flex: 1;
+}
+
+.goal-card-header strong {
+  display: block;
+  overflow: hidden;
+  color: #333635;
+  font-size: 20px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.goal-card-header small {
+  display: block;
+  margin-top: 2px;
+  color: #8b8e89;
+  font-size: 15px;
+}
+
+.goal-ring {
+  display: flex;
+  height: 48px;
+  width: 48px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 4px solid #050505;
+  color: #777a76;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.goal-card-body {
+  border-top: 1px solid rgba(17, 19, 19, 0.08);
+  padding: 8px 18px 18px;
+}
+
+.goal-task-row {
+  display: flex;
+  min-height: 42px;
+  width: 100%;
+  align-items: center;
+  gap: 12px;
+  color: #505351;
+  text-align: left;
+  font-size: 17px;
+}
+
+.goal-task-create,
+.amount-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 48px;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.goal-task-create input {
+  min-height: 48px;
+  min-width: 0;
+  border: 0;
+  border-radius: 20px;
+  background: rgba(17, 19, 19, 0.05);
+  padding: 0 16px;
+  color: #303332;
+  font-size: 16px;
+  outline: none;
+}
+
+.goal-task-create button {
+  display: flex;
+  height: 48px;
+  width: 48px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 20px;
+  background: #303332;
+  color: #ffffff;
+}
+
+.finance-panel {
+  display: grid;
+  gap: 14px;
+}
+
+.balance-card {
+  padding: 26px;
+}
+
+.balance-card > span {
+  color: #969995;
+  font-size: 16px;
+}
+
+.balance-card > strong {
+  display: block;
+  margin-top: 8px;
+  color: #050505;
+  font-size: 40px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.balance-card > div {
+  display: flex;
+  gap: 28px;
+  margin-top: 24px;
+  color: #969995;
+  font-size: 15px;
+}
+
+.balance-card b {
+  display: block;
+  margin-top: 6px;
+  color: #626662;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.transaction-create {
+  display: grid;
+  gap: 14px;
+  padding: 14px;
+}
+
+.finance-toggle {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  border-radius: 24px;
+  background: rgba(17, 19, 19, 0.06);
+  padding: 5px;
+}
+
+.finance-toggle button {
+  min-height: 44px;
+  border-radius: 20px;
+  color: #888b87;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.finance-toggle button.active {
+  background: #ffffff;
+  color: #050505;
+  box-shadow: 0 8px 20px rgba(17, 19, 19, 0.09);
+}
+
+.amount-row {
+  margin-top: 0;
+}
+
+.transaction-row {
+  display: flex;
+  min-height: 72px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  border: 1px solid rgba(17, 19, 19, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.56);
+  padding: 14px 20px;
+  color: #333635;
+}
+
+.transaction-row strong,
+.transaction-row small {
+  display: block;
+}
+
+.transaction-row strong {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.transaction-row small {
+  margin-top: 4px;
+  color: #969995;
+  font-size: 14px;
+}
+
+.transaction-row b {
+  color: #777a76;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.daily-bottom-nav {
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 30px;
+  background: rgba(248, 248, 244, 0.72);
+  box-shadow:
+    0 18px 54px rgba(17, 19, 19, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(28px) saturate(160%);
+  -webkit-backdrop-filter: blur(28px) saturate(160%);
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.summary-tile {
+  display: grid;
+  min-height: 128px;
+  align-content: space-between;
+  padding: 18px;
+  color: #777a76;
+}
+
+.summary-tile strong {
+  color: #111313;
+  font-size: 30px;
+  font-weight: 560;
+}
+
+.summary-tile span {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.summary-panel {
+  margin-top: 14px;
+  padding: 20px;
+}
+
+.summary-panel h2 {
+  margin: 0 0 12px;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.summary-panel p {
+  margin: 0;
+  color: #777a76;
+}
+
+.summary-row {
+  border-top: 1px solid rgba(17, 19, 19, 0.08);
+  padding: 12px 0;
+  color: #333635;
+}
+
+.summary-settings-link {
+  display: block;
+  margin-top: 16px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 16px 20px;
+  color: #626662;
+  font-weight: 650;
+  text-align: center;
+}
+
+@media (max-width: 560px) {
+  .daily-mode-control button {
+    font-size: 13px;
+  }
+
+  .goal-create-row {
+    grid-template-columns: minmax(0, 1fr) 58px;
+  }
+
+  .goal-create-row input[type="date"] {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+
+  .goal-create-row > button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+}

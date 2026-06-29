@@ -7,6 +7,7 @@ import { DashboardRoute } from "./DashboardRoute";
 import { MoneyRoute } from "./MoneyRoute";
 import { SettingsRoute } from "./SettingsRoute";
 import { SpaceRoute } from "./SpaceRoute";
+import { SummaryRoute } from "./SummaryRoute";
 
 export const appRouter = createBrowserRouter([
   {
@@ -14,6 +15,7 @@ export const appRouter = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <DashboardRoute /> },
+      { path: "dashboard", element: <SummaryRoute /> },
       { path: "areas", element: <AreasRoute /> },
       { path: "money", element: <MoneyRoute /> },
       { path: "spaces/:spaceId/items/:cardId", element: <CardDetailRoute /> },
