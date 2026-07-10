@@ -5,6 +5,7 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/anchor/',
   plugins: [
     react(),
     tailwindcss(),
@@ -15,20 +16,20 @@ export default defineConfig({
         short_name: 'Anchor',
         description:
           'A private, offline-first planning app for organizing goals, routines, money, health, and life progress.',
-        theme_color: '#2f6f5e',
-        background_color: '#f5f3ee',
+        theme_color: '#faf8f2',
+        background_color: '#faf8f2',
         display: 'standalone',
-        start_url: '/',
-        scope: '/',
+        start_url: '/anchor/',
+        scope: '/anchor/',
         icons: [
           {
-            src: '/pwa-192.svg',
+            src: '/anchor/pwa-192.svg',
             sizes: '192x192',
             type: 'image/svg+xml',
             purpose: 'any maskable',
           },
           {
-            src: '/pwa-512.svg',
+            src: '/anchor/pwa-512.svg',
             sizes: '512x512',
             type: 'image/svg+xml',
             purpose: 'any maskable',

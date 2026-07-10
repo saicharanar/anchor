@@ -1,30 +1,90 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Anchor — monochrome daily tracker
+   One font (Geist Mono). Zero color. One tracking scale.
+   Whitespace separates rows — no divider lines.
+   ============================================================ */
+
 :root {
-  color: #111313;
-  background: #f4f3ef;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  color-scheme: light;
+
+  /* Surfaces — warm near-white paper */
+  --bg: #fafaf8;
+  --surface: #ffffff;
+  --surface-soft: #f1f1ee;
+  --surface-sunk: #ededea;
+
+  /* Ink — greyscale text ramp (AA on --bg) */
+  --ink: #14140f;
+  --ink-strong: #000000;
+  --ink-soft: #3c3c37;
+  --muted: #59594f;        /* 6.4:1 on --bg → secondary text */
+  --faint: #85857c;        /* 3.4:1 on --bg → large text / decoration only */
+
+  /* Lines & elevation */
+  --border: #e5e4df;
+  --border-strong: #d3d2cc;
+  --scrim: rgb(20 20 15 / 0.34);
+  --shadow-pop: 0 24px 60px rgb(20 20 15 / 0.18), 0 2px 8px rgb(20 20 15 / 0.08);
+
+  /* One font family, everywhere */
+  --font: "Geist Mono Variable", ui-monospace, "SF Mono", "Menlo", monospace;
+
+  /* One tracking value for every uppercase micro-label */
+  --track-label: 0.09em;
+
+  /* Motion */
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --dur-fast: 140ms;
+  --dur: 260ms;
 }
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #100f0d;
+  --surface: #191815;
+  --surface-soft: #24231f;
+  --surface-sunk: #2c2b26;
+
+  --ink: #f4f3ec;
+  --ink-strong: #ffffff;
+  --ink-soft: #d0cec4;
+  --muted: #9d9b90;        /* 6.6:1 on --bg */
+  --faint: #74736a;        /* 3.5:1 on --bg */
+
+  --border: #302e29;
+  --border-strong: #403e37;
+  --scrim: rgb(0 0 0 / 0.6);
+  --shadow-pop: 0 28px 64px rgb(0 0 0 / 0.6), 0 2px 8px rgb(0 0 0 / 0.5);
+}
+
+/* ---------- base ---------- */
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   margin: 0;
-  min-width: 320px;
   min-height: 100svh;
-  background:
-    radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.88), transparent 28rem),
-    radial-gradient(circle at 85% 12%, rgba(205, 217, 211, 0.55), transparent 24rem),
-    linear-gradient(180deg, #f7f6f2 0%, #ecefec 100%);
-  background-attachment: fixed;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font);
+  letter-spacing: -0.01em;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
 }
 
 button,
@@ -32,1168 +92,1257 @@ input,
 select,
 textarea {
   font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  -webkit-tap-highlight-color: transparent;
 }
 
 button {
   cursor: pointer;
 }
 
-#root {
+::selection {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* Every uppercase micro-label shares one look */
+.daily-brand,
+.daily-date-label,
+.daily-date-rail small,
+.daily-month-picker header strong,
+.daily-month-weekdays span,
+.daily-quiet-summary span,
+.daily-section-intro h2,
+.daily-goal-head small,
+.daily-money-summary p,
+.daily-money-summary small,
+.daily-mode-toggle button,
+.daily-transaction-row small,
+.daily-inline-form > button,
+.daily-goal-form > button,
+.daily-money-form > button,
+.daily-bottom-tabs button {
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+}
+
+/* ---------- app shell ---------- */
+
+.daily-app {
   min-height: 100svh;
 }
 
-@theme {
-  --color-anchor-bg: #f4f3ef;
-  --color-anchor-panel: #ffffff;
-  --color-anchor-sheet: #f8f8f4;
-  --color-anchor-border: #d8d8d1;
-  --color-anchor-text: #111313;
-  --color-anchor-muted: #6d716d;
-  --color-anchor-soft: #ecece5;
-  --color-anchor-accent: #111111;
-  --color-anchor-accent-strong: #000000;
-  --color-anchor-warm: #8a6a3c;
-  --color-anchor-danger: #b13f3f;
-  --color-anchor-credit: #35785f;
+.daily-boot,
+.daily-error {
+  margin: 0 auto;
+  max-width: 480px;
+  padding: 40px 26px;
+  font-size: 13px;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
 }
 
-.glass {
-  background: rgba(255, 255, 255, 0.54);
-  border: 1px solid rgba(255, 255, 255, 0.64);
-  box-shadow:
-    0 22px 60px rgba(36, 40, 38, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(24px) saturate(150%);
-  -webkit-backdrop-filter: blur(24px) saturate(150%);
+.daily-boot {
+  color: var(--muted);
 }
 
-.liquid-panel {
-  position: relative;
-  overflow: hidden;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.58);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.34)),
-    rgba(255, 255, 255, 0.38);
-  box-shadow:
-    0 24px 70px rgba(34, 39, 36, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.28);
-  backdrop-filter: blur(26px) saturate(160%);
-  -webkit-backdrop-filter: blur(26px) saturate(160%);
+.daily-error {
+  color: var(--ink);
 }
 
-.liquid-panel::before,
-.liquid-nav::before {
-  pointer-events: none;
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.72), transparent 38%);
-  opacity: 0.75;
+/* ============================================================
+   Layout shell
+   ============================================================ */
+
+.daily-shell {
+  min-height: 100svh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: max(24px, env(safe-area-inset-top)) 24px calc(104px + env(safe-area-inset-bottom));
+  color: var(--ink);
 }
 
-.liquid-tile {
-  position: relative;
+/* ---------- header ---------- */
+
+.daily-header {
+  display: grid;
+  gap: 26px;
+}
+
+.daily-brand-row {
   display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.56);
-  background:
-    linear-gradient(150deg, rgba(255, 255, 255, 0.74), rgba(255, 255, 255, 0.3)),
-    rgba(255, 255, 255, 0.32);
-  box-shadow:
-    0 18px 50px rgba(36, 40, 38, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.72);
-  backdrop-filter: blur(22px) saturate(155%);
-  -webkit-backdrop-filter: blur(22px) saturate(155%);
+  align-items: center;
+  justify-content: space-between;
 }
 
-.liquid-icon-button {
-  display: inline-flex;
+.daily-brand {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.daily-brand-row button {
+  display: grid;
   height: 40px;
   width: 40px;
-  align-items: center;
-  justify-content: center;
+  place-items: center;
+  border: 0;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.56);
-  background: rgba(255, 255, 255, 0.54);
-  color: #111313;
-  box-shadow:
-    0 16px 34px rgba(34, 39, 36, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.76);
-  backdrop-filter: blur(18px) saturate(160%);
-  -webkit-backdrop-filter: blur(18px) saturate(160%);
-  transition:
-    transform 140ms ease,
-    background 140ms ease;
+  background: transparent;
+  color: var(--muted);
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 
-.liquid-icon-button:active {
-  transform: scale(0.94);
-  background: rgba(255, 255, 255, 0.72);
+.daily-brand-row button:active {
+  background: var(--surface-soft);
+  color: var(--ink);
 }
 
-.liquid-icon-button:disabled {
-  opacity: 0.45;
+.daily-title-block h1 {
+  margin: 0;
+  font-size: clamp(36px, 11vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.96;
+  color: var(--ink);
 }
 
-.content-panel {
-  overflow: hidden;
-  border-radius: 28px;
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.74);
-  box-shadow:
-    0 12px 34px rgba(34, 39, 36, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
-}
-
-.planning-item-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 10px 4px 16px;
-}
-
-.planning-item-link {
+.daily-date-bar {
   display: flex;
-  min-height: 56px;
-  min-width: 0;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
-  border-radius: 22px;
-  padding-right: 4px;
-  text-align: left;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
+  margin-top: 16px;
 }
 
-.planning-item-link:active {
-  transform: scale(0.99);
-  background: rgba(255, 255, 255, 0.36);
+.daily-date-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
 }
 
-.planning-item-actions {
+.daily-date-label {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--muted);
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.daily-date-label:active {
+  color: var(--ink);
+}
+
+.daily-today-btn {
+  height: 30px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.daily-today-btn:active {
+  color: var(--ink);
+}
+
+.daily-date-steps {
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.planning-item-actions button {
-  display: flex;
-  height: 40px;
-  width: 40px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: #6d716d;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
-}
-
-.planning-item-actions button:active {
-  transform: scale(0.92);
-  background: rgba(255, 255, 255, 0.54);
-}
-
-.planning-item-actions .text-anchor-danger {
-  color: #b13f3f;
-}
-
-.liquid-nav {
-  overflow: hidden;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  background: rgba(244, 246, 242, 0.54);
-  box-shadow:
-    0 20px 60px rgba(31, 35, 33, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(28px) saturate(170%);
-  -webkit-backdrop-filter: blur(28px) saturate(170%);
-}
-
-.tap-row {
-  display: flex;
-  min-height: 48px;
-  align-items: center;
-  gap: 12px;
-  border-radius: 22px;
-  background: rgba(255, 255, 255, 0.42);
-  padding: 10px 12px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
-}
-
-.tap-row:active {
-  transform: scale(0.985);
-  background: rgba(255, 255, 255, 0.62);
-}
-
-.tap-check {
-  height: 23px;
-  width: 23px;
-  flex-shrink: 0;
-  border-radius: 999px;
-  border: 1px solid rgba(17, 19, 19, 0.2);
-  background: rgba(255, 255, 255, 0.7);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.task-row {
-  display: flex;
-  min-height: 48px;
-  width: 100%;
-  align-items: center;
-  gap: 12px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.42);
-  padding: 10px 12px;
-  text-align: left;
-  font-size: 15px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.48);
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
-}
-
-.task-row:active {
-  transform: scale(0.99);
-  background: rgba(255, 255, 255, 0.64);
-}
-
-.task-check {
-  display: flex;
-  height: 24px;
-  width: 24px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1px solid rgba(17, 19, 19, 0.16);
-  background: rgba(255, 255, 255, 0.72);
-  color: transparent;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
-}
-
-.task-check-complete {
-  border-color: #111313;
-  background: #111313;
-  color: #ffffff;
-}
-
-.add-task-row {
-  display: flex;
-  min-height: 48px;
-  width: 100%;
-  align-items: center;
-  gap: 12px;
-  border-radius: 18px;
-  background: rgba(255, 255, 255, 0.26);
-  padding: 10px 12px;
-  text-align: left;
-  font-size: 15px;
-  font-weight: 500;
-  color: #6d716d;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
-}
-
-.add-task-row:active {
-  transform: scale(0.99);
-  background: rgba(255, 255, 255, 0.54);
-}
-
-.item-detail {
-  padding-top: 2px;
-}
-
-.item-nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.item-nav-button {
-  display: inline-flex;
-  min-height: 40px;
-  align-items: center;
-  gap: 8px;
-  border-radius: 999px;
-  color: #6d716d;
-  font-size: 15px;
-  font-weight: 500;
-  transition: transform 120ms ease;
-}
-
-.item-nav-button:active {
-  transform: scale(0.96);
-}
-
-.item-title-block {
-  margin-top: 18px;
-  padding-inline: 4px;
-}
-
-.item-title-block h1 {
-  margin: 3px 0 0;
-  max-width: 100%;
-  color: #111313;
-  font-size: 28px;
-  font-weight: 680;
-  letter-spacing: 0;
-  line-height: 1.08;
-}
-
-.item-title-block p {
-  margin: 10px 0 0;
-  max-width: 34rem;
-  color: #6d716d;
-  font-size: 15px;
-  line-height: 1.55;
-}
-
-.item-eyebrow {
-  margin: 0 !important;
-  color: #8a8d88 !important;
-  font-size: 13px !important;
-  font-weight: 600;
-  line-height: 1.2 !important;
-}
-
-.ios-group {
-  margin-top: 18px;
-  overflow: hidden;
-  border-radius: 26px;
-  border: 1px solid rgba(255, 255, 255, 0.66);
-  background: rgba(255, 255, 255, 0.66);
-  box-shadow:
-    0 18px 46px rgba(34, 39, 36, 0.07),
-    inset 0 1px 0 rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(20px) saturate(145%);
-  -webkit-backdrop-filter: blur(20px) saturate(145%);
-}
-
-.item-progress {
-  padding: 18px 18px 12px;
-}
-
-.item-progress > div:last-child {
-  display: flex;
-  justify-content: space-between;
-  gap: 14px;
-  padding-top: 8px;
-  color: #71756f;
-  font-size: 13px;
-  font-weight: 500;
-}
-
-.ios-task-list {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.ios-task-row {
-  display: flex;
-  min-height: 56px;
-  align-items: center;
-  gap: 12px;
-  margin-inline: 12px;
-  border-top: 1px solid rgba(17, 19, 19, 0.06);
-  padding: 8px 4px;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
-}
-
-.ios-task-list li:first-child .ios-task-row {
-  border-top: 0;
-}
-
-.ios-task-row:active {
-  background: rgba(255, 255, 255, 0.42);
-}
-
-.ios-check {
-  display: flex;
-  height: 28px;
-  width: 28px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1.5px solid rgba(17, 19, 19, 0.18);
-  background: rgba(255, 255, 255, 0.42);
-  color: transparent;
-  transition:
-    transform 120ms ease,
-    background 120ms ease,
-    border-color 120ms ease;
-}
-
-.ios-check:active {
-  transform: scale(0.9);
-}
-
-.ios-check-complete {
-  border-color: #111313;
-  background: #111313;
-  color: #ffffff;
-}
-
-.ios-task-label {
-  min-height: 44px;
-  min-width: 0;
-  flex: 1;
-  color: #111313;
-  text-align: left;
-  font-size: 16px;
-  line-height: 1.3;
-}
-
-.ios-task-label span {
-  display: block;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.ios-task-input {
-  min-height: 44px;
-  min-width: 0;
-  flex: 1;
-  border: 0;
-  background: transparent;
-  color: #111313;
-  font-size: 16px;
-  outline: none;
-}
-
-.ios-delete-task {
-  display: flex;
+.daily-date-steps button {
+  display: grid;
   height: 38px;
   width: 38px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  color: #b13f3f;
-}
-
-.ios-add-row {
-  display: flex;
-  min-height: 58px;
-  align-items: center;
-  gap: 12px;
-  margin-inline: 12px;
-  border-top: 1px solid rgba(17, 19, 19, 0.06);
-  padding: 8px 4px 10px;
-}
-
-.ios-add-row input {
-  min-height: 44px;
-  min-width: 0;
-  flex: 1;
+  place-items: center;
   border: 0;
+  border-radius: 999px;
   background: transparent;
-  color: #111313;
-  font-size: 16px;
-  outline: none;
+  color: var(--ink-soft);
+  font-size: 20px;
+  line-height: 1;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
 }
 
-.ios-add-row input::placeholder {
-  color: #858984;
+.daily-date-steps button:active {
+  background: var(--surface-soft);
+  color: var(--ink);
 }
 
-.ios-add-row button {
-  min-height: 34px;
-  border-radius: 999px;
-  padding-inline: 12px;
-  color: #111313;
-  font-size: 13px;
-  font-weight: 650;
-  transition: opacity 120ms ease;
+/* ---------- week date rail ---------- */
+
+.daily-date-rail {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
 }
 
-.ios-add-row button:disabled {
-  opacity: 0;
-  pointer-events: none;
+.daily-date-rail button {
+  display: grid;
+  min-height: 60px;
+  place-items: center;
+  gap: 6px;
+  border: 1px solid transparent;
+  border-radius: 16px;
+  background: transparent;
+  color: var(--ink-soft);
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 
-.ios-empty-row {
-  margin: 0;
-  padding: 18px;
-  color: #6d716d;
-  font-size: 14px;
+.daily-date-rail button:active {
+  background: var(--surface-soft);
 }
 
-.item-secondary-actions {
-  display: flex;
-  justify-content: center;
-  padding-top: 14px;
+.daily-date-rail button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
 }
 
-.item-secondary-actions button {
-  display: inline-flex;
-  min-height: 40px;
-  align-items: center;
-  gap: 8px;
-  border-radius: 999px;
-  padding-inline: 14px;
-  color: #6d716d;
-  font-size: 14px;
+.daily-date-rail small {
+  font-size: 10px;
   font-weight: 600;
-  transition:
-    transform 120ms ease,
-    background 120ms ease;
+  color: var(--faint);
 }
 
-.item-secondary-actions button:active {
-  transform: scale(0.96);
-  background: rgba(255, 255, 255, 0.44);
+.daily-date-rail button[aria-pressed="true"] small {
+  color: var(--bg);
+  opacity: 0.7;
 }
 
-.sheet-backdrop {
+.daily-date-rail strong {
+  font-size: 16px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+/* ============================================================
+   Calendar modal
+   ============================================================ */
+
+.daily-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 60;
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding: 14px;
-}
-
-.sheet-scrim {
-  position: absolute;
-  inset: 0;
-  background: rgba(21, 23, 22, 0.22);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-}
-
-.ios-sheet {
-  position: relative;
-  width: min(100%, 520px);
-  max-height: min(82svh, 720px);
-  overflow: auto;
-  border-radius: 30px;
-  border: 1px solid rgba(255, 255, 255, 0.68);
-  background: rgba(248, 248, 244, 0.86);
-  box-shadow:
-    0 28px 80px rgba(21, 23, 22, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
-  padding: 10px 16px 16px;
-  backdrop-filter: blur(30px) saturate(160%);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
-}
-
-.sheet-handle {
-  margin: 0 auto 8px;
-  height: 4px;
-  width: 42px;
-  border-radius: 999px;
-  background: rgba(17, 19, 19, 0.16);
-}
-
-.sheet-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-block: 4px 12px;
-}
-
-.sheet-title-row h2 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 680;
-  letter-spacing: 0;
-}
-
-.sheet-form {
-  display: grid;
-  gap: 14px;
-}
-
-.sheet-form label {
-  display: grid;
-  gap: 8px;
-  color: #111313;
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.sheet-actions {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding-top: 4px;
-}
-
-@media (max-width: 480px) {
-  .item-title-block h1 {
-    font-size: 26px;
-  }
-
-  .item-title-block p {
-    font-size: 14px;
-  }
-
-  .ios-group {
-    border-radius: 24px;
-  }
-}
-
-.daily-tracker {
-  max-width: 620px;
-  margin: 0 auto;
-}
-
-.daily-header {
-  padding: 4px 2px 18px;
-}
-
-.daily-header h1 {
-  margin: 0;
-  color: #303332;
-  font-size: clamp(30px, 8vw, 40px);
-  font-weight: 520;
-  letter-spacing: 0;
-  line-height: 1.1;
-}
-
-.daily-header p {
-  margin: 8px 0 0;
-  color: #777a76;
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.daily-mode-control {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-  border-radius: 28px;
-  background: rgba(17, 19, 19, 0.07);
-  padding: 5px;
-  box-shadow: inset 0 1px 1px rgba(17, 19, 19, 0.04);
-}
-
-.daily-mode-control button {
-  min-height: 46px;
-  border-radius: 23px;
-  color: #7c7f7b;
-  font-size: 15px;
-  font-weight: 700;
-  transition:
-    transform 140ms ease,
-    background 140ms ease,
-    box-shadow 140ms ease,
-    color 140ms ease;
-}
-
-.daily-mode-control button.active {
-  background: rgba(255, 255, 255, 0.92);
-  color: #111313;
-  box-shadow:
-    0 8px 22px rgba(17, 19, 19, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
-}
-
-.daily-mode-control button:active {
-  transform: scale(0.97);
-}
-
-.daily-mode-control button:focus-visible,
-.finance-toggle button:focus-visible,
-.inline-create-row button:focus-visible,
-.goal-create-row > button:focus-visible,
-.amount-row button:focus-visible,
-.daily-row:focus-visible,
-.habit-week button:focus-visible,
-.goal-card-header:focus-visible,
-.goal-task-row:focus-visible,
-.goal-task-create button:focus-visible,
-.daily-bottom-nav a:focus-visible {
-  outline: 2px solid rgba(17, 19, 19, 0.22);
-  outline-offset: 3px;
-}
-
-.daily-panel {
-  margin-top: 16px;
-}
-
-.inline-create-row,
-.goal-create-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 58px;
-  gap: 10px;
-  align-items: center;
-}
-
-.goal-create-row {
-  grid-template-columns: minmax(0, 1fr) minmax(9rem, 0.72fr) 58px;
-}
-
-.inline-create-row input,
-.goal-create-row input,
-.transaction-create input {
-  min-height: 58px;
-  min-width: 0;
-  border: 1px solid rgba(17, 19, 19, 0.08);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.68);
-  padding: 0 22px;
-  color: #303332;
-  font-size: 18px;
-  outline: none;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65);
-}
-
-.inline-create-row input::placeholder,
-.goal-create-row input::placeholder,
-.transaction-create input::placeholder {
-  color: #a1a4a0;
-}
-
-.inline-create-row button,
-.goal-create-row > button,
-.amount-row button {
-  display: flex;
-  height: 58px;
-  width: 58px;
   align-items: center;
   justify-content: center;
-  border-radius: 23px;
-  background: #050505;
-  color: #ffffff;
-  box-shadow: 0 12px 28px rgba(5, 5, 5, 0.14);
-  transition: transform 120ms ease;
-}
-
-.inline-create-row button:active,
-.goal-create-row > button:active,
-.amount-row button:active {
-  transform: scale(0.94);
-}
-
-.daily-list,
-.habit-stack,
-.goal-stack,
-.transaction-list {
-  display: grid;
-  gap: 10px;
-  margin-top: 14px;
-}
-
-.daily-row {
-  display: flex;
-  min-height: 64px;
-  align-items: center;
-  gap: 16px;
-  border: 1px solid rgba(17, 19, 19, 0.08);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.58);
-  padding: 12px 18px;
-  color: #333635;
-  text-align: left;
-  font-size: 18px;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-.daily-check {
-  display: flex;
-  height: 28px;
-  width: 28px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 1.5px solid rgba(17, 19, 19, 0.2);
-  color: transparent;
-}
-
-.daily-check.complete {
-  border-color: #050505;
-  background: #050505;
-  color: #ffffff;
-}
-
-.daily-empty {
-  margin: 0;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.48);
-  padding: 22px;
-  color: #777a76;
-  font-size: 15px;
-}
-
-.habit-card,
-.goal-tracker-card,
-.balance-card,
-.transaction-create,
-.summary-panel,
-.summary-tile {
-  border: 1px solid rgba(17, 19, 19, 0.08);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.58);
-  box-shadow:
-    0 16px 46px rgba(17, 19, 19, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.64);
-}
-
-.habit-card {
   padding: 20px;
+  background: var(--scrim);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  animation: modal-fade var(--dur) var(--ease);
 }
 
-.habit-card-header,
-.goal-card-header {
-  display: flex;
+.daily-modal-body {
+  width: min(360px, calc(100vw - 40px));
+  animation: modal-pop var(--dur) var(--ease);
+}
+
+@keyframes modal-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes modal-pop {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+
+.daily-month-picker {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  padding: 18px 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: var(--surface);
+  box-shadow: var(--shadow-pop);
+}
+
+.daily-month-picker header {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) 40px;
   align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  margin-bottom: 10px;
 }
 
-.habit-card h2 {
-  margin: 0;
-  color: #333635;
-  font-size: 20px;
-  font-weight: 500;
-}
-
-.habit-card-header span {
-  color: #8b8e89;
-  font-size: 18px;
+.daily-month-picker header strong {
+  font-size: 13px;
   font-weight: 600;
+  text-align: center;
+  color: var(--ink);
 }
 
-.habit-week {
+.daily-month-picker header button {
+  display: grid;
+  height: 40px;
+  width: 40px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 20px;
+  line-height: 1;
+  transition: background var(--dur-fast) var(--ease);
+}
+
+.daily-month-picker header button:active {
+  background: var(--surface-soft);
+}
+
+.daily-month-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 8px;
-  margin-top: 18px;
+  padding-bottom: 6px;
 }
 
-.habit-week button {
+.daily-month-weekdays span {
+  font-size: 10px;
+  font-weight: 600;
+  text-align: center;
+  color: var(--faint);
+}
+
+.daily-month-grid {
   display: grid;
-  justify-items: center;
-  gap: 8px;
-  color: #a0a39f;
-  font-size: 13px;
-  font-weight: 700;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
 }
 
-.habit-week strong {
-  display: flex;
-  height: 36px;
-  width: 36px;
-  align-items: center;
-  justify-content: center;
+.daily-month-grid button {
+  display: grid;
+  aspect-ratio: 1;
+  min-height: 40px;
+  place-items: center;
+  border: 1px solid transparent;
   border-radius: 999px;
-  background: rgba(17, 19, 19, 0.07);
-  color: transparent;
+  background: transparent;
+  color: var(--ink);
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+  transition: background var(--dur-fast) var(--ease), border-color var(--dur-fast) var(--ease);
 }
 
-.habit-week button.done strong {
-  background: #050505;
-  color: #ffffff;
+.daily-month-grid button:active {
+  background: var(--surface-soft);
 }
 
-.goal-tracker-card {
-  overflow: hidden;
+.daily-month-grid button:disabled {
+  color: var(--faint);
+  opacity: 0.3;
+  pointer-events: none;
 }
 
-.goal-card-header {
+.daily-month-grid button[aria-pressed="true"] {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+/* ---------- workspace ---------- */
+
+.daily-workspace {
+  padding-top: 44px;
+}
+
+.daily-view {
+  display: grid;
+  gap: 34px;
+}
+
+/* ---------- quiet top summary ---------- */
+
+.daily-quiet-summary {
+  display: grid;
+  gap: 12px;
+}
+
+.daily-quiet-summary div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 20px;
+}
+
+.daily-quiet-summary span {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.daily-quiet-summary strong {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  text-align: right;
+}
+
+/* ---------- section ---------- */
+
+.daily-section {
+  display: grid;
+  gap: 6px;
+}
+
+.daily-section-intro {
+  display: grid;
+  gap: 6px;
+  padding-bottom: 6px;
+}
+
+.daily-section-intro h2 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.daily-section-intro p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-transform: none;
+}
+
+/* ---------- lists & rows ---------- */
+
+.daily-list {
+  display: grid;
+  gap: 2px;
+}
+
+.daily-editable-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 58px;
+}
+
+.daily-row-button {
+  display: flex;
+  min-height: 58px;
   width: 100%;
-  padding: 18px;
+  align-items: center;
+  gap: 15px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0;
   text-align: left;
+  font-size: 16px;
+  font-weight: 430;
+  line-height: 1.3;
 }
 
-.goal-card-header > span:nth-child(2) {
+.daily-row-button svg {
+  flex: 0 0 auto;
+  color: var(--faint);
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.daily-row-button:has(.done) svg {
+  color: var(--ink);
+}
+
+.daily-row-button .done {
+  color: var(--faint);
+  text-decoration: line-through;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 1px;
+}
+
+.daily-row-button span {
   min-width: 0;
-  flex: 1;
-}
-
-.goal-card-header strong {
-  display: block;
   overflow: hidden;
-  color: #333635;
-  font-size: 20px;
-  font-weight: 550;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.goal-card-header small {
-  display: block;
-  margin-top: 2px;
-  color: #8b8e89;
-  font-size: 15px;
-}
+/* ---------- inline add form ---------- */
 
-.goal-ring {
-  display: flex;
-  height: 48px;
-  width: 48px;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  border: 4px solid #050505;
-  color: #777a76;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.goal-card-body {
-  border-top: 1px solid rgba(17, 19, 19, 0.08);
-  padding: 8px 18px 18px;
-}
-
-.goal-task-row {
-  display: flex;
-  min-height: 42px;
-  width: 100%;
-  align-items: center;
-  gap: 12px;
-  color: #505351;
-  text-align: left;
-  font-size: 17px;
-}
-
-.goal-task-create,
-.amount-row {
+.daily-inline-form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 48px;
-  gap: 10px;
-  margin-top: 10px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  min-height: 54px;
+  padding: 0 8px 0 16px;
+  border-radius: 14px;
+  background: var(--surface-soft);
 }
 
-.goal-task-create input {
-  min-height: 48px;
-  min-width: 0;
+.daily-inline-form input,
+.daily-goal-form input,
+.daily-money-form input,
+.daily-money-form select,
+.daily-date-field {
+  min-height: 52px;
+  width: 100%;
   border: 0;
-  border-radius: 20px;
-  background: rgba(17, 19, 19, 0.05);
-  padding: 0 16px;
-  color: #303332;
+  background: transparent;
+  color: var(--ink);
   font-size: 16px;
   outline: none;
 }
 
-.goal-task-create button {
+/* Standalone fields carry their own filled surface so they read as inputs. */
+.daily-goal-form > input,
+.daily-field-row input,
+.daily-money-fields input,
+.daily-money-form select,
+.daily-date-field {
+  min-height: 54px;
+  padding: 0 16px;
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.daily-inline-form input::placeholder,
+.daily-goal-form input::placeholder,
+.daily-money-form input::placeholder {
+  color: var(--muted);
+}
+
+.daily-date-field {
   display: flex;
-  height: 48px;
-  width: 48px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 20px;
-  background: #303332;
-  color: #ffffff;
-}
-
-.finance-panel {
-  display: grid;
-  gap: 14px;
-}
-
-.balance-card {
-  padding: 26px;
-}
-
-.balance-card > span {
-  color: #969995;
-  font-size: 16px;
-}
-
-.balance-card > strong {
-  display: block;
-  margin-top: 8px;
-  color: #050505;
-  font-size: 40px;
-  font-weight: 500;
-  letter-spacing: 0;
-}
-
-.balance-card > div {
-  display: flex;
-  gap: 28px;
-  margin-top: 24px;
-  color: #969995;
-  font-size: 15px;
-}
-
-.balance-card b {
-  display: block;
-  margin-top: 6px;
-  color: #626662;
-  font-size: 22px;
-  font-weight: 500;
-}
-
-.transaction-create {
-  display: grid;
-  gap: 14px;
-  padding: 14px;
-}
-
-.finance-toggle {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
-  border-radius: 24px;
-  background: rgba(17, 19, 19, 0.06);
-  padding: 5px;
-}
-
-.finance-toggle button {
-  min-height: 44px;
-  border-radius: 20px;
-  color: #888b87;
-  font-size: 16px;
-  font-weight: 700;
-}
-
-.finance-toggle button.active {
-  background: #ffffff;
-  color: #050505;
-  box-shadow: 0 8px 20px rgba(17, 19, 19, 0.09);
-}
-
-.amount-row {
-  margin-top: 0;
-}
-
-.transaction-row {
-  display: flex;
-  min-height: 72px;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
-  border: 1px solid rgba(17, 19, 19, 0.08);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.56);
-  padding: 14px 20px;
-  color: #333635;
+  gap: 10px;
+  text-align: left;
 }
 
-.transaction-row strong,
-.transaction-row small {
-  display: block;
+.daily-date-field svg {
+  flex: 0 0 auto;
+  color: var(--muted);
 }
 
-.transaction-row strong {
-  font-size: 18px;
-  font-weight: 500;
+.daily-date-field .placeholder {
+  color: var(--muted);
 }
 
-.transaction-row small {
-  margin-top: 4px;
-  color: #969995;
-  font-size: 14px;
+.daily-inline-form > button,
+.daily-goal-form > button,
+.daily-money-form > button {
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  padding: 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: opacity var(--dur-fast) var(--ease);
 }
 
-.transaction-row b {
-  color: #777a76;
-  font-size: 20px;
-  font-weight: 500;
+.daily-inline-form button:disabled {
+  opacity: 0;
+  pointer-events: none;
 }
 
-.daily-bottom-nav {
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  border-radius: 30px;
-  background: rgba(248, 248, 244, 0.72);
-  box-shadow:
-    0 18px 54px rgba(17, 19, 19, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(28px) saturate(160%);
-  -webkit-backdrop-filter: blur(28px) saturate(160%);
+/* Block submit buttons collapse when there's nothing to submit — no reserved gap. */
+.daily-goal-form > button:disabled,
+.daily-money-form > button:disabled {
+  display: none;
 }
 
-.summary-grid {
+/* ---------- inline row actions (edit / delete) ---------- */
+
+.daily-inline-actions {
+  display: inline-flex;
+  gap: 2px;
+  margin-left: 6px;
+}
+
+.daily-inline-actions button,
+.daily-edit-form button {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  height: 38px;
+  width: 38px;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--faint);
+  padding: 0;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease);
+}
+
+.daily-inline-actions button:active,
+.daily-edit-form button:active {
+  background: var(--surface-soft);
+  color: var(--ink);
+}
+
+/* ---------- inline edit form ---------- */
+
+.daily-edit-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 4px;
+  min-height: 58px;
+}
+
+.daily-edit-form input {
+  min-height: 52px;
+  border: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 16px;
+  outline: none;
+}
+
+/* ---------- goals ---------- */
+
+.daily-goal-form,
+.daily-money-form {
+  display: grid;
+  gap: 10px;
+}
+
+.daily-field-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+}
+
+.daily-goal-form > button,
+.daily-money-form > button {
+  justify-self: end;
+  min-height: 48px;
+}
+
+.daily-goal-row {
+  display: grid;
+  gap: 14px;
+  padding: 20px 0;
+}
+
+.daily-goal-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: baseline;
   gap: 12px;
 }
 
-.summary-tile {
-  display: grid;
-  min-height: 128px;
-  align-content: space-between;
-  padding: 18px;
-  color: #777a76;
-}
-
-.summary-tile strong {
-  color: #111313;
-  font-size: 30px;
-  font-weight: 560;
-}
-
-.summary-tile span {
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.summary-panel {
-  margin-top: 14px;
-  padding: 20px;
-}
-
-.summary-panel h2 {
-  margin: 0 0 12px;
-  font-size: 18px;
-  font-weight: 650;
-}
-
-.summary-panel p {
-  margin: 0;
-  color: #777a76;
-}
-
-.summary-row {
-  border-top: 1px solid rgba(17, 19, 19, 0.08);
-  padding: 12px 0;
-  color: #333635;
-}
-
-.summary-settings-link {
+.daily-goal-head strong {
   display: block;
-  margin-top: 16px;
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.5);
-  padding: 16px 20px;
-  color: #626662;
-  font-weight: 650;
-  text-align: center;
+  font-size: 18px;
+  font-weight: 520;
+  line-height: 1.2;
+  color: var(--ink);
 }
 
-@media (max-width: 560px) {
-  .daily-mode-control button {
-    font-size: 13px;
+.daily-goal-head small {
+  display: block;
+  margin-top: 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.daily-goal-progress {
+  font-size: 12px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.daily-progress-line {
+  display: block;
+  block-size: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--border);
+}
+
+.daily-progress-line span {
+  display: block;
+  block-size: 100%;
+  border-radius: inherit;
+  background: var(--ink);
+  transition: inline-size var(--dur) var(--ease);
+}
+
+.daily-step-list {
+  display: grid;
+  gap: 2px;
+  padding-left: 6px;
+  margin-top: 2px;
+}
+
+.daily-step-list .daily-row-button,
+.daily-step-list .daily-inline-form {
+  min-height: 48px;
+}
+
+.daily-step-list .daily-row-button {
+  font-size: 15px;
+}
+
+.daily-goal-hint {
+  margin: 2px 0 0;
+  padding-left: 6px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.daily-goal-edit {
+  display: grid;
+  gap: 10px;
+  padding: 2px 0 6px;
+}
+
+.daily-goal-edit input {
+  min-height: 54px;
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  background: var(--surface-soft);
+  padding: 0 16px;
+  color: var(--ink);
+  font-size: 16px;
+  outline: none;
+}
+
+.daily-goal-edit input::placeholder {
+  color: var(--muted);
+}
+
+.daily-goal-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.daily-goal-edit-actions button {
+  min-height: 40px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--surface-soft);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  transition: color var(--dur-fast) var(--ease), background var(--dur-fast) var(--ease);
+}
+
+.daily-goal-edit-actions button[type="submit"] {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.daily-goal-edit-actions button:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ---------- money ---------- */
+
+.daily-money-summary {
+  display: grid;
+  gap: 18px;
+  padding: 0 0 8px;
+}
+
+.daily-money-summary p {
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.daily-money-summary div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.daily-money-summary span {
+  display: grid;
+  gap: 8px;
+}
+
+.daily-money-summary small {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--faint);
+}
+
+.daily-money-summary strong {
+  font-size: 28px;
+  font-weight: 520;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+.daily-mode-toggle {
+  display: flex;
+  gap: 6px;
+  padding: 0 0 2px;
+}
+
+.daily-mode-toggle button {
+  min-height: 38px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  padding: 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.daily-mode-toggle button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.daily-money-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.daily-money-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  color: var(--muted);
+  padding-right: 44px;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2385857c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 16px center;
+}
+
+.daily-transaction-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 68px;
+}
+
+.daily-transaction-row strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 460;
+  color: var(--ink);
+}
+
+.daily-transaction-row small {
+  display: block;
+  margin-top: 5px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.daily-transaction-row b {
+  font-size: 15px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+/* ---------- empty state ---------- */
+
+.daily-empty {
+  margin: 0;
+  padding: 16px 0 4px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ---------- bottom tabs ---------- */
+
+.daily-bottom-tabs {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 10px 18px calc(12px + env(safe-area-inset-bottom));
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: blur(20px) saturate(140%);
+  -webkit-backdrop-filter: blur(20px) saturate(140%);
+}
+
+.daily-bottom-tabs button {
+  display: grid;
+  min-height: 54px;
+  place-items: center;
+  gap: 5px;
+  border: 0;
+  background: transparent;
+  color: var(--faint);
+  padding: 0;
+  font-size: 10px;
+  font-weight: 600;
+  transition: color var(--dur-fast) var(--ease);
+}
+
+.daily-bottom-tabs button[aria-current="page"] {
+  color: var(--ink);
+}
+
+.daily-bottom-tabs i {
+  inline-size: 4px;
+  block-size: 4px;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.daily-bottom-tabs button[aria-current="page"] i {
+  background: currentColor;
+}
+
+/* ============================================================
+   Insights
+   ============================================================ */
+
+.daily-insights {
+  display: grid;
+  gap: 26px;
+}
+
+.daily-insights-head {
+  display: grid;
+  gap: 16px;
+}
+
+.daily-insights-head h1 {
+  margin: 0;
+  font-size: clamp(36px, 11vw, 48px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 0.96;
+  color: var(--ink);
+}
+
+.daily-period {
+  display: flex;
+  gap: 6px;
+}
+
+.daily-period button {
+  min-height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  transition: background var(--dur-fast) var(--ease), color var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
+}
+
+.daily-period button.active {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.daily-insights-range {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* diverging money chart — credited up, spent down */
+.daily-chart {
+  display: grid;
+  gap: 14px;
+}
+
+.daily-chart-bars {
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.daily-chart-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.daily-chart-up,
+.daily-chart-down {
+  display: flex;
+  justify-content: center;
+  inline-size: 100%;
+  block-size: 58px;
+}
+
+.daily-chart-up {
+  align-items: flex-end;
+}
+
+.daily-chart-down {
+  align-items: flex-start;
+}
+
+.daily-chart-up i,
+.daily-chart-down i {
+  inline-size: 62%;
+  max-inline-size: 14px;
+  min-block-size: 0;
+}
+
+.daily-chart-up i {
+  border-radius: 3px 3px 0 0;
+  background: var(--ink);
+}
+
+.daily-chart-down i {
+  border-radius: 0 0 3px 3px;
+  background: var(--faint);
+}
+
+.daily-chart-base {
+  inline-size: 100%;
+  block-size: 1px;
+  background: var(--border-strong);
+}
+
+.daily-chart-axis {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.daily-chart-axis small {
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  color: var(--faint);
+}
+
+.daily-chart-legend {
+  display: flex;
+  gap: 18px;
+}
+
+.daily-chart-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.daily-chart-legend i {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 3px;
+}
+
+.daily-chart-legend i.credited {
+  background: var(--ink);
+}
+
+.daily-chart-legend i.spent {
+  background: var(--faint);
+}
+
+/* goal breakdown bar */
+.daily-goalbar {
+  display: grid;
+  gap: 12px;
+}
+
+.daily-goalbar-track {
+  display: flex;
+  block-size: 12px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--surface-soft);
+}
+
+.daily-goalbar-track span {
+  display: block;
+  block-size: 100%;
+}
+
+.daily-goalbar-track span.completed {
+  background: var(--ink);
+}
+
+.daily-goalbar-track span.ongoing {
+  background: var(--faint);
+}
+
+.daily-goalbar-track span.overdue {
+  background: var(--border-strong);
+}
+
+.daily-goalbar-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.daily-goalbar-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+}
+
+.daily-goalbar-legend i {
+  inline-size: 10px;
+  block-size: 10px;
+  border-radius: 3px;
+}
+
+.daily-goalbar-legend i.completed {
+  background: var(--ink);
+}
+
+.daily-goalbar-legend i.ongoing {
+  background: var(--faint);
+}
+
+.daily-goalbar-legend i.overdue {
+  background: var(--border-strong);
+}
+
+.daily-routine-insight {
+  display: grid;
+  gap: 10px;
+  padding: 12px 0;
+}
+
+.daily-routine-insight-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.daily-routine-insight-head strong {
+  font-size: 16px;
+  font-weight: 460;
+  color: var(--ink);
+}
+
+.daily-routine-insight-head span {
+  font-size: 11px;
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.daily-insights-goal {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 52px;
+}
+
+.daily-insights-goal strong {
+  font-size: 16px;
+  font-weight: 460;
+  color: var(--ink);
+}
+
+.daily-insights-goal span {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ---------- focus ---------- */
+/* Tappable controls get a quiet ring; text fields rely on the caret. */
+
+.daily-shell button:focus-visible,
+.daily-shell a:focus-visible,
+.daily-modal-backdrop button:focus-visible,
+.daily-bottom-tabs button:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 3px;
+  border-radius: 999px;
+}
+
+.daily-shell input:focus,
+.daily-shell input:focus-visible,
+.daily-shell select:focus,
+.daily-shell select:focus-visible {
+  outline: none;
+}
+
+/* ---------- responsive ---------- */
+
+@media (max-width: 380px) {
+  .daily-shell {
+    padding-inline: 20px;
   }
 
-  .goal-create-row {
-    grid-template-columns: minmax(0, 1fr) 58px;
+  .daily-field-row,
+  .daily-goal-head {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
-  .goal-create-row input[type="date"] {
-    grid-column: 1 / -1;
-    grid-row: 2;
+  .daily-goal-progress {
+    text-align: left;
   }
+}
 
-  .goal-create-row > button {
-    grid-column: 2;
-    grid-row: 1;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
