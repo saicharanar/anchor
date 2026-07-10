@@ -15,6 +15,18 @@ export function getTasksForDate(tasks: TimelineTask[], date: string) {
   return tasks.filter((task) => task.date === date).sort(sortByCreatedAt);
 }
 
+export function getOverdueTasksForDate(tasks: TimelineTask[], date: string) {
+  return tasks
+    .filter((task) => task.date < date && (!task.completedAt || task.completedAt > date))
+    .sort(sortByCreatedAt);
+}
+
+export function getOverdueDayCount(taskDate: string, referenceDate: string) {
+  const taskTime = new Date(`${taskDate}T00:00:00`).getTime();
+  const referenceTime = new Date(`${referenceDate}T00:00:00`).getTime();
+  return Math.max(0, Math.round((referenceTime - taskTime) / dayInMilliseconds));
+}
+
 export function getHabitsForDate(habits: TimelineHabit[], date: string) {
   return habits
     .filter((habit) => habit.startDate <= date && (!habit.archivedAt || habit.archivedAt > date))

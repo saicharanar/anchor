@@ -31,6 +31,8 @@ import {
   getGoalStatusLine,
   getHabitsForDate,
   getHabitLogForDate,
+  getOverdueDayCount,
+  getOverdueTasksForDate,
   getRelativeDayLabel,
   getTasksForDate,
   getTransactionsForDate,
@@ -180,6 +182,7 @@ function AppHeader({
 function TodayView({ goalSnapshots, selectedDate }: { goalSnapshots: GoalSnapshot[]; selectedDate: string }) {
   const { timeline } = useAnchorStore();
   const tasks = getTasksForDate(timeline.tasks, selectedDate).filter((task) => !task.goalId);
+  const overdueTasks = getOverdueTasksForDate(timeline.tasks, selectedDate).filter((task) => !task.goalId);
   const habits = getHabitsForDate(timeline.habits, selectedDate);
   const transactions = getTransactionsForDate(timeline.transactions, selectedDate);
   const activeGoals = goalSnapshots.filter((snapshot) => snapshot.isActiveOnDate);
@@ -191,7 +194,7 @@ function TodayView({ goalSnapshots, selectedDate }: { goalSnapshots: GoalSnapsho
         <SummaryLine label="Goals" value={formatGoalSummary(activeGoals)} />
         <SummaryLine label="Money" value={`${formatRupees(spentToday)} spent today`} />
       </section>
-      <TasksSection selectedDate={selectedDate} tasks={tasks} />
+      <TasksSection overdueTasks={overdueTasks} selectedDate={selectedDate} tasks={tasks} />
       <RoutinesSection habits={habits} selectedDate={selectedDate} />
     </div>
   );
@@ -502,7 +505,15 @@ function formatRangeLabel(range: DateRange) {
   return start === end ? start : `${start} – ${end}`;
 }
 
-function TasksSection({ selectedDate, tasks }: { selectedDate: string; tasks: TimelineData["tasks"] }) {
+function TasksSection({
+  overdueTasks,
+  selectedDate,
+  tasks,
+}: {
+  overdueTasks: TimelineData["tasks"];
+  selectedDate: string;
+  tasks: TimelineData["tasks"];
+}) {
   const { timeline, removeTask, upsertTask } = useAnchorStore();
   const [title, setTitle] = useState("");
 
@@ -546,6 +557,17 @@ function TasksSection({ selectedDate, tasks }: { selectedDate: string; tasks: Ti
       <SectionIntro id="tasks-heading" title="Tasks" hint="Things for this date." />
       <InlineTextForm label="New task" placeholder="Add task" value={title} onChange={setTitle} onSubmit={addTask} />
       <div className="daily-list">
+        {overdueTasks.map((task) => (
+          <EditableCheckRow
+            key={task.id}
+            isDone={Boolean(task.completedAt)}
+            label={task.title}
+            meta={formatOverdueLabel(getOverdueDayCount(task.date, selectedDate))}
+            onDelete={() => void removeTask(task.id)}
+            onRename={(title) => void upsertTask({ ...task, title, updatedAt: new Date().toISOString() })}
+            onToggle={() => toggleTask(task.id)}
+          />
+        ))}
         {tasks.map((task) => (
           <EditableCheckRow
             key={task.id}
@@ -556,7 +578,7 @@ function TasksSection({ selectedDate, tasks }: { selectedDate: string; tasks: Ti
             onToggle={() => toggleTask(task.id)}
           />
         ))}
-        {tasks.length === 0 ? <EmptyText text="No tasks for this date." /> : null}
+        {tasks.length === 0 && overdueTasks.length === 0 ? <EmptyText text="No tasks for this date." /> : null}
       </div>
     </section>
   );
@@ -1067,15 +1089,25 @@ function InlineTextForm({
   );
 }
 
+function formatOverdueLabel(days: number) {
+  if (days <= 0) {
+    return "Overdue";
+  }
+
+  return days === 1 ? "1 day overdue" : `${days} days overdue`;
+}
+
 function EditableCheckRow({
   isDone,
   label,
+  meta,
   onDelete,
   onRename,
   onToggle,
 }: {
   isDone: boolean;
   label: string;
+  meta?: string;
   onDelete: () => void;
   onRename: (title: string) => void;
   onToggle: () => void;
@@ -1110,6 +1142,7 @@ function EditableCheckRow({
       <button className="daily-row-button" onClick={onToggle} type="button">
         <CheckGlyph isDone={isDone} />
         <span className={isDone ? "done" : undefined}>{label}</span>
+        {meta && !isDone ? <small className="daily-row-meta">{meta}</small> : null}
       </button>
       <InlineActions label={label} onDelete={onDelete} onEdit={() => setIsEditing(true)} />
     </div>

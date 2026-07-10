@@ -578,6 +578,17 @@ button {
   white-space: nowrap;
 }
 
+.daily-row-meta {
+  flex: 0 0 auto;
+  margin-inline-start: auto;
+  padding-inline-start: 12px;
+  font-size: 11px;
+  letter-spacing: var(--track-label);
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
 /* ---------- inline add form ---------- */
 
 .daily-inline-form {
