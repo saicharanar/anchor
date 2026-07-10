@@ -28,9 +28,14 @@ monochrome interface that gets out of the way.
 
 ## Features
 
-**Today** — Your tasks and routines for the selected day. Move through days with the week rail or jump
-to any date from the calendar. One tap to complete, inline edit, and a *Today* shortcut to snap back to
-now.
+**Today** — One compact screen for the day. The date bar at the top opens a calendar on tap; step days
+with `‹ ›`, and a *Today* shortcut snaps you back to now. **Tasks** and **Routines** live under a quick
+toggle so each stays uncluttered.
+
+**Tasks** — One tap to complete, inline rename and delete. Anything you didn't finish **carries forward
+as overdue** until you clear it, so nothing quietly disappears. Turn any task into a **checklist** —
+add subtasks and the parent shows a small progress ring (e.g. 2/3); revert it back to a single item any
+time.
 
 **Routines** — Repeatable checks that carry across days. Build a habit and check it off each day; the
 Insights tab tracks your streaks and how often you keep them.
@@ -38,8 +43,10 @@ Insights tab tracks your streaks and how often you keep them.
 **Goals** — Longer arcs that span many days. Task goals track step-by-step progress; money goals grow
 as you link credited entries toward a savings target. Each goal shows a live progress bar and due date.
 
-**Money** — Log spending and credits in rupees, review the month at a glance, and link credits to a
-savings goal. Spent entries can't distort a goal — only credits move it forward.
+**Money** — Log spending and credits in rupees and see the month's totals at a glance. Entries are
+**grouped by day** — the selected day sits on top, with the rest of the month tucked into a collapsible
+section. Link credits to a savings goal; spent entries can't distort a goal — only credits move it
+forward.
 
 **Insights** — Analytics over a **week, month, all-time, or a custom range**. A diverging chart shows
 credited vs. spent over time (bucketed adaptively by day, week, month, or year so it stays readable at
