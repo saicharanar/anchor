@@ -3,9 +3,13 @@ import {
   CalendarDays,
   Check,
   CheckCircle2,
+  ChevronDown,
   Circle,
+  ListPlus,
+  ListX,
   Moon,
   Pencil,
+  RotateCcw,
   Sun,
   Target,
   Trash2,
@@ -34,20 +38,23 @@ import {
   getOverdueDayCount,
   getOverdueTasksForDate,
   getRelativeDayLabel,
+  getSubtasks,
   getTasksForDate,
-  getTransactionsForDate,
+  isTaskComplete,
 } from "../../features/timeline/timelineSelectors";
 import type {
   GoalSnapshot,
   TimelineData,
   TimelineGoal,
   TimelineHabit,
+  TimelineTask,
 } from "../../shared/types/timeline";
 import { formatDateInputValue, getTodayDateInputValue } from "../../shared/utils/dates";
 import { createId } from "../../shared/utils/id";
 import { useAnchorStore } from "../useAnchorStore";
 
 type DailyTab = "today" | "goals" | "money" | "insights";
+type TodaySection = "tasks" | "routines";
 type MoneyMode = "spent" | "credited";
 type ThemeMode = "light" | "dark";
 
@@ -103,7 +110,7 @@ export function DashboardRoute() {
           />
 
           <main className="daily-workspace">
-            {activeTab === "today" ? <TodayView goalSnapshots={goalSnapshots} selectedDate={selectedDate} /> : null}
+            {activeTab === "today" ? <TodayView selectedDate={selectedDate} /> : null}
             {activeTab === "goals" ? <GoalsView goalSnapshots={goalSnapshots} selectedDate={selectedDate} /> : null}
             {activeTab === "money" ? <MoneyView goalSnapshots={goalSnapshots} selectedDate={selectedDate} /> : null}
           </main>
@@ -131,39 +138,39 @@ function AppHeader({
   today: string;
 }) {
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const isToday = selectedDate === today;
 
   return (
     <header className="daily-header">
-      <div className="daily-brand-row">
-        <p className="daily-brand">Anchor</p>
-        <button aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`} onClick={onToggleTheme} type="button">
+      <div className="daily-datenav">
+        <button aria-label="Previous day" className="daily-day-step" onClick={() => onMoveDate(-1)} type="button">
+          ‹
+        </button>
+        <button aria-haspopup="dialog" className="daily-date-trigger" onClick={() => setIsCalendarOpen(true)} type="button">
+          <span className="rel">{getRelativeDayLabel(selectedDate, today)}</span>
+          <span className="sep" aria-hidden="true">·</span>
+          <span className="abs">{formatShortDate(selectedDate)}</span>
+          <ChevronDown aria-hidden="true" size={15} strokeWidth={1.75} />
+        </button>
+        <button aria-label="Next day" className="daily-day-step" onClick={() => onMoveDate(1)} type="button">
+          ›
+        </button>
+        <span className="daily-datenav-spacer" aria-hidden="true" />
+        {isToday ? null : (
+          <button className="daily-today-reset" onClick={() => onDateChange(today)} type="button">
+            <RotateCcw aria-hidden="true" size={14} strokeWidth={1.75} />
+            Today
+          </button>
+        )}
+        <button
+          aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+          className="daily-theme-toggle"
+          onClick={onToggleTheme}
+          type="button"
+        >
           {theme === "light" ? <Moon aria-hidden="true" size={18} strokeWidth={1.75} /> : <Sun aria-hidden="true" size={18} strokeWidth={1.75} />}
         </button>
       </div>
-      <div className="daily-title-block">
-        <h1>{getRelativeDayLabel(selectedDate, today)}</h1>
-        <div className="daily-date-bar">
-          <div className="daily-date-info">
-            <button className="daily-date-label" onClick={() => setIsCalendarOpen((isOpen) => !isOpen)} type="button">
-              {formatReadableDate(selectedDate)}
-            </button>
-            {selectedDate === today ? null : (
-              <button className="daily-today-btn" onClick={() => onDateChange(today)} type="button">
-                Today
-              </button>
-            )}
-          </div>
-          <div className="daily-date-steps" aria-label="Change date">
-            <button aria-label="Previous day" onClick={() => onMoveDate(-1)} type="button">
-              ‹
-            </button>
-            <button aria-label="Next day" onClick={() => onMoveDate(1)} type="button">
-              ›
-            </button>
-          </div>
-        </div>
-      </div>
-      <DateRail selectedDate={selectedDate} onDateChange={onDateChange} />
       {isCalendarOpen ? (
         <CalendarModal onClose={() => setIsCalendarOpen(false)}>
           <MonthPicker
@@ -179,23 +186,41 @@ function AppHeader({
   );
 }
 
-function TodayView({ goalSnapshots, selectedDate }: { goalSnapshots: GoalSnapshot[]; selectedDate: string }) {
+function TodayView({ selectedDate }: { selectedDate: string }) {
   const { timeline } = useAnchorStore();
+  const [section, setSection] = useState<TodaySection>("tasks");
   const tasks = getTasksForDate(timeline.tasks, selectedDate).filter((task) => !task.goalId);
   const overdueTasks = getOverdueTasksForDate(timeline.tasks, selectedDate).filter((task) => !task.goalId);
   const habits = getHabitsForDate(timeline.habits, selectedDate);
-  const transactions = getTransactionsForDate(timeline.transactions, selectedDate);
-  const activeGoals = goalSnapshots.filter((snapshot) => snapshot.isActiveOnDate);
-  const spentToday = sumTransactions(transactions, "spent");
+  const openTaskCount = overdueTasks.length + tasks.filter((task) => !task.completedAt).length;
 
   return (
     <div className="daily-view">
-      <section className="daily-quiet-summary" aria-label="Today summary">
-        <SummaryLine label="Goals" value={formatGoalSummary(activeGoals)} />
-        <SummaryLine label="Money" value={`${formatRupees(spentToday)} spent today`} />
-      </section>
-      <TasksSection overdueTasks={overdueTasks} selectedDate={selectedDate} tasks={tasks} />
-      <RoutinesSection habits={habits} selectedDate={selectedDate} />
+      <div className="daily-segmented" role="tablist" aria-label="Today sections">
+        <button
+          aria-selected={section === "tasks"}
+          className={section === "tasks" ? "active" : undefined}
+          onClick={() => setSection("tasks")}
+          role="tab"
+          type="button"
+        >
+          Tasks{openTaskCount > 0 ? <em>{openTaskCount}</em> : null}
+        </button>
+        <button
+          aria-selected={section === "routines"}
+          className={section === "routines" ? "active" : undefined}
+          onClick={() => setSection("routines")}
+          role="tab"
+          type="button"
+        >
+          Routines
+        </button>
+      </div>
+      {section === "tasks" ? (
+        <TasksSection overdueTasks={overdueTasks} selectedDate={selectedDate} tasks={tasks} />
+      ) : (
+        <RoutinesSection habits={habits} selectedDate={selectedDate} />
+      )}
     </div>
   );
 }
@@ -267,17 +292,19 @@ function GoalsView({ goalSnapshots, selectedDate }: { goalSnapshots: GoalSnapsho
 
 function MoneyView({ goalSnapshots, selectedDate }: { goalSnapshots: GoalSnapshot[]; selectedDate: string }) {
   const { timeline } = useAnchorStore();
+  const [showRest, setShowRest] = useState(false);
+  const moneyGoals = goalSnapshots.map((snapshot) => snapshot.goal);
   const monthTransactions = getTransactionsForMonth(timeline.transactions, selectedDate);
-  const monthEntries = [...monthTransactions].sort(
-    (left, right) => right.date.localeCompare(left.date) || right.createdAt.localeCompare(left.createdAt),
-  );
   const spentThisMonth = sumTransactions(monthTransactions, "spent");
   const creditedThisMonth = sumTransactions(monthTransactions, "credited");
 
+  const entries = [...monthTransactions].sort(byRecency);
+  const dayEntries = entries.filter((entry) => entry.date === selectedDate);
+  const restEntries = entries.filter((entry) => entry.date !== selectedDate);
+
   return (
     <div className="daily-view">
-      <SectionIntro title="Money" hint="Spending and credits this month." />
-      <section className="daily-money-summary" aria-label="Monthly money summary">
+      <section className="daily-money-summary" aria-label="This month">
         <p>{formatMonth(selectedDate)}</p>
         <div>
           <span>
@@ -292,16 +319,31 @@ function MoneyView({ goalSnapshots, selectedDate }: { goalSnapshots: GoalSnapsho
       </section>
       <TransactionForm goalSnapshots={goalSnapshots} selectedDate={selectedDate} />
 
-      <div className="daily-list">
-        {monthEntries.map((transaction) => (
-          <TransactionRow
-            key={transaction.id}
-            moneyGoals={goalSnapshots.map((snapshot) => snapshot.goal)}
-            transaction={transaction}
-          />
-        ))}
-        {monthEntries.length === 0 ? <EmptyText text="No money entries this month." /> : null}
-      </div>
+      <section className="daily-section" aria-label="Entries">
+        <p className="daily-group-label">On {formatShortDate(selectedDate)}</p>
+        <div className="daily-list">
+          {dayEntries.map((transaction) => (
+            <TransactionRow key={transaction.id} moneyGoals={moneyGoals} transaction={transaction} />
+          ))}
+          {dayEntries.length === 0 ? <EmptyText text="No entries on this day." /> : null}
+        </div>
+
+        {restEntries.length > 0 ? (
+          <>
+            <button aria-expanded={showRest} className="daily-group-toggle" onClick={() => setShowRest((open) => !open)} type="button">
+              Rest of the month · {restEntries.length}
+              <ChevronDown aria-hidden="true" size={15} strokeWidth={1.75} />
+            </button>
+            {showRest ? (
+              <div className="daily-list">
+                {restEntries.map((transaction) => (
+                  <TransactionRow key={transaction.id} moneyGoals={moneyGoals} transaction={transaction} />
+                ))}
+              </div>
+            ) : null}
+          </>
+        ) : null}
+      </section>
     </div>
   );
 }
@@ -514,7 +556,7 @@ function TasksSection({
   selectedDate: string;
   tasks: TimelineData["tasks"];
 }) {
-  const { timeline, removeTask, upsertTask } = useAnchorStore();
+  const { upsertTask } = useAnchorStore();
   const [title, setTitle] = useState("");
 
   function addTask(event: FormEvent<HTMLFormElement>) {
@@ -538,47 +580,22 @@ function TasksSection({
     setTitle("");
   }
 
-  function toggleTask(taskId: string) {
-    const task = timeline.tasks.find((item) => item.id === taskId);
-
-    if (!task) {
-      return;
-    }
-
-    void upsertTask({
-      ...task,
-      completedAt: task.completedAt ? undefined : selectedDate,
-      updatedAt: new Date().toISOString(),
-    });
-  }
-
   return (
-    <section className="daily-section" aria-labelledby="tasks-heading">
-      <SectionIntro id="tasks-heading" title="Tasks" hint="Things for this date." />
+    <section className="daily-section" aria-label="Tasks">
       <InlineTextForm label="New task" placeholder="Add task" value={title} onChange={setTitle} onSubmit={addTask} />
       <div className="daily-list">
         {overdueTasks.map((task) => (
-          <EditableCheckRow
+          <TaskItem
             key={task.id}
-            isDone={Boolean(task.completedAt)}
-            label={task.title}
             meta={formatOverdueLabel(getOverdueDayCount(task.date, selectedDate))}
-            onDelete={() => void removeTask(task.id)}
-            onRename={(title) => void upsertTask({ ...task, title, updatedAt: new Date().toISOString() })}
-            onToggle={() => toggleTask(task.id)}
+            selectedDate={selectedDate}
+            task={task}
           />
         ))}
         {tasks.map((task) => (
-          <EditableCheckRow
-            key={task.id}
-            isDone={Boolean(task.completedAt)}
-            label={task.title}
-            onDelete={() => void removeTask(task.id)}
-            onRename={(title) => void upsertTask({ ...task, title, updatedAt: new Date().toISOString() })}
-            onToggle={() => toggleTask(task.id)}
-          />
+          <TaskItem key={task.id} selectedDate={selectedDate} task={task} />
         ))}
-        {tasks.length === 0 && overdueTasks.length === 0 ? <EmptyText text="No tasks for this date." /> : null}
+        {tasks.length === 0 && overdueTasks.length === 0 ? <EmptyText text="Nothing today. Add the first thing." /> : null}
       </div>
     </section>
   );
@@ -624,8 +641,7 @@ function RoutinesSection({ habits, selectedDate }: { habits: TimelineHabit[]; se
   }
 
   return (
-    <section className="daily-section" aria-labelledby="routines-heading">
-      <SectionIntro id="routines-heading" title="Routines" hint="Repeatable checks that carry across days." />
+    <section className="daily-section" aria-label="Routines">
       <InlineTextForm label="New routine" placeholder="Add routine" value={title} onChange={setTitle} onSubmit={addHabit} />
       <div className="daily-list">
         {habits.map((habit) => (
@@ -929,19 +945,6 @@ function TransactionRow({
   );
 }
 
-function DateRail({ onDateChange, selectedDate }: { onDateChange: (date: string) => void; selectedDate: string }) {
-  return (
-    <section className="daily-date-rail" aria-label="Choose date">
-      {getWeekDays(selectedDate).map((day) => (
-        <button aria-pressed={day.date === selectedDate} key={day.date} onClick={() => onDateChange(day.date)} type="button">
-          <small>{day.weekday}</small>
-          <strong>{day.dayOfMonth}</strong>
-        </button>
-      ))}
-    </section>
-  );
-}
-
 function CalendarModal({ children, onClose }: { children: ReactNode; onClose: () => void }) {
   useEffect(() => {
     function closeOnEscape(event: KeyboardEvent) {
@@ -1097,6 +1100,220 @@ function formatOverdueLabel(days: number) {
   return days === 1 ? "1 day overdue" : `${days} days overdue`;
 }
 
+function TaskItem({ meta, selectedDate, task }: { meta?: string; selectedDate: string; task: TimelineTask }) {
+  const { timeline, removeTask, upsertTask } = useAnchorStore();
+  const [isOpen, setIsOpen] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [draft, setDraft] = useState(task.title);
+  const [subtaskTitle, setSubtaskTitle] = useState("");
+
+  const subtasks = getSubtasks(timeline.tasks, task.id);
+  const hasSubtasks = subtasks.length > 0;
+  const isList = hasSubtasks;
+  const showRevert = isList || isOpen;
+  const doneCount = subtasks.filter((subtask) => subtask.completedAt).length;
+  const isDone = isTaskComplete(task, subtasks);
+
+  function toggleSelf() {
+    const timestamp = new Date().toISOString();
+
+    if (!hasSubtasks) {
+      void upsertTask({ ...task, completedAt: task.completedAt ? undefined : selectedDate, updatedAt: timestamp });
+      return;
+    }
+
+    const nextCompletedAt = isDone ? undefined : selectedDate;
+    subtasks.forEach((subtask) => void upsertTask({ ...subtask, completedAt: nextCompletedAt, updatedAt: timestamp }));
+    void upsertTask({ ...task, completedAt: nextCompletedAt, updatedAt: timestamp });
+  }
+
+  function syncParent(nextSubtasks: TimelineTask[], timestamp: string) {
+    if (nextSubtasks.length === 0) {
+      return;
+    }
+
+    const allDone = nextSubtasks.every((subtask) => subtask.completedAt);
+
+    if (Boolean(task.completedAt) === allDone) {
+      return;
+    }
+
+    void upsertTask({ ...task, completedAt: allDone ? selectedDate : undefined, updatedAt: timestamp });
+  }
+
+  function toggleSubtask(subtask: TimelineTask) {
+    const timestamp = new Date().toISOString();
+    const nextSubtask = { ...subtask, completedAt: subtask.completedAt ? undefined : selectedDate, updatedAt: timestamp };
+    void upsertTask(nextSubtask);
+    syncParent(subtasks.map((item) => (item.id === subtask.id ? nextSubtask : item)), timestamp);
+  }
+
+  function addSubtask(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedTitle = subtaskTitle.trim();
+
+    if (!trimmedTitle) {
+      return;
+    }
+
+    const timestamp = new Date().toISOString();
+    void upsertTask({
+      id: createId("task"),
+      title: trimmedTitle,
+      date: task.date,
+      parentId: task.id,
+      tags: [],
+      createdAt: timestamp,
+      updatedAt: timestamp,
+    });
+
+    if (task.completedAt) {
+      void upsertTask({ ...task, completedAt: undefined, updatedAt: timestamp });
+    }
+
+    setSubtaskTitle("");
+  }
+
+  function deleteSubtask(subtask: TimelineTask) {
+    void removeTask(subtask.id);
+    syncParent(subtasks.filter((item) => item.id !== subtask.id), new Date().toISOString());
+  }
+
+  function renameSubtask(subtask: TimelineTask, title: string) {
+    void upsertTask({ ...subtask, title, updatedAt: new Date().toISOString() });
+  }
+
+  function revertToItem() {
+    subtasks.forEach((subtask) => void removeTask(subtask.id));
+    setIsOpen(false);
+  }
+
+  function saveRename(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const trimmedDraft = draft.trim();
+
+    if (!trimmedDraft) {
+      return;
+    }
+
+    void upsertTask({ ...task, title: trimmedDraft, updatedAt: new Date().toISOString() });
+    setIsRenaming(false);
+  }
+
+  if (isRenaming) {
+    return (
+      <form className="daily-edit-form" onSubmit={saveRename}>
+        <input aria-label={`Edit ${task.title}`} value={draft} onChange={(event) => setDraft(event.target.value)} />
+        {showRevert ? (
+          <button aria-label={`Turn ${task.title} back into a single item`} onClick={() => { revertToItem(); setIsRenaming(false); }} type="button">
+            <ListX size={18} strokeWidth={1.75} />
+          </button>
+        ) : (
+          <button aria-label={`Turn ${task.title} into a list`} onClick={() => { setIsOpen(true); setIsRenaming(false); }} type="button">
+            <ListPlus size={18} strokeWidth={1.75} />
+          </button>
+        )}
+        <button aria-label={`Save ${task.title}`} type="submit"><Check size={18} strokeWidth={1.75} /></button>
+        <button aria-label={`Cancel editing ${task.title}`} onClick={() => setIsRenaming(false)} type="button"><X size={18} strokeWidth={1.75} /></button>
+      </form>
+    );
+  }
+
+  const actions = (
+    <span className="daily-inline-actions">
+      <button aria-label={`Edit ${task.title}`} onClick={() => { setDraft(task.title); setIsRenaming(true); }} type="button">
+        <Pencil size={16} strokeWidth={1.75} />
+      </button>
+      <button aria-label={`Delete ${task.title}`} onClick={() => void removeTask(task.id)} type="button">
+        <Trash2 size={16} strokeWidth={1.75} />
+      </button>
+    </span>
+  );
+
+  return (
+    <div className={buildTaskClass(isOpen, isDone)}>
+      <div className="daily-editable-row">
+        {isList ? (
+          <div className="daily-task-main">
+            <button
+              aria-label={isDone ? `Mark ${task.title} incomplete` : `Mark all of ${task.title} complete`}
+              className="daily-check"
+              onClick={toggleSelf}
+              type="button"
+            >
+              <CheckGlyph isDone={isDone} />
+            </button>
+            <button aria-expanded={isOpen} className="daily-task-label" onClick={() => setIsOpen((open) => !open)} type="button">
+              <span className={isDone ? "daily-task-title done" : "daily-task-title"}>{task.title}</span>
+              {meta && !isDone ? <small className="daily-row-meta">{meta}</small> : null}
+              <ProgressRing done={doneCount} total={subtasks.length} />
+            </button>
+          </div>
+        ) : (
+          <button className="daily-row-button" onClick={toggleSelf} type="button">
+            <CheckGlyph isDone={isDone} />
+            <span className={isDone ? "done" : undefined}>{task.title}</span>
+            {meta && !isDone ? <small className="daily-row-meta">{meta}</small> : null}
+          </button>
+        )}
+        {actions}
+      </div>
+      <div className="daily-task-drawer">
+        <div className="daily-task-panel" inert={!isOpen}>
+          {subtasks.map((subtask) => (
+            <EditableCheckRow
+              key={subtask.id}
+              isDone={Boolean(subtask.completedAt)}
+              label={subtask.title}
+              onDelete={() => deleteSubtask(subtask)}
+              onRename={(title) => renameSubtask(subtask, title)}
+              onToggle={() => toggleSubtask(subtask)}
+            />
+          ))}
+          <InlineTextForm
+            label={`Add subtask to ${task.title}`}
+            placeholder="Add subtask"
+            value={subtaskTitle}
+            onChange={setSubtaskTitle}
+            onSubmit={addSubtask}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function buildTaskClass(isOpen: boolean, isDone: boolean) {
+  return ["daily-task", isOpen ? "is-open" : "", isDone ? "is-done" : ""].filter(Boolean).join(" ");
+}
+
+function ProgressRing({ done, total }: { done: number; total: number }) {
+  const RADIUS = 7;
+  const circumference = 2 * Math.PI * RADIUS;
+  const ratio = total === 0 ? 0 : done / total;
+  const offset = circumference * (1 - ratio);
+
+  return (
+    <span className="daily-task-progress">
+      <small>
+        {done}/{total}
+      </small>
+      <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+        <circle className="track" cx="8" cy="8" r={RADIUS} />
+        <circle
+          className="arc"
+          cx="8"
+          cy="8"
+          r={RADIUS}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          transform="rotate(-90 8 8)"
+        />
+      </svg>
+    </span>
+  );
+}
+
 function EditableCheckRow({
   isDone,
   label,
@@ -1158,8 +1375,8 @@ function InlineActions({ label, onDelete, onEdit }: { label: string; onDelete: (
   );
 }
 
-function CheckGlyph({ isDone }: { isDone: boolean }) {
-  return isDone ? <CheckCircle2 aria-hidden="true" size={23} strokeWidth={1.75} /> : <Circle aria-hidden="true" size={23} strokeWidth={1.75} />;
+function CheckGlyph({ isDone, size = 20 }: { isDone: boolean; size?: number }) {
+  return isDone ? <CheckCircle2 aria-hidden="true" size={size} strokeWidth={1.75} /> : <Circle aria-hidden="true" size={size} strokeWidth={1.75} />;
 }
 
 function ProgressLine({ value }: { value: number }) {
@@ -1184,11 +1401,6 @@ function formatGoalProgress(snapshot: GoalSnapshot, stepCount: number) {
   return `${snapshot.progressValue} of ${total} ${noun}`;
 }
 
-function formatGoalSummary(goalSnapshots: GoalSnapshot[]) {
-  const noun = goalSnapshots.length === 1 ? "goal" : "goals";
-  return `${goalSnapshots.length} active ${noun}`;
-}
-
 function getTransactionMeta(transaction: TimelineData["transactions"][number], goals: TimelineGoal[]) {
   const date = formatCompactDate(transaction.date);
   const goal = goals.find((item) => item.id === transaction.goalId);
@@ -1200,30 +1412,14 @@ function getTransactionsForMonth(transactions: TimelineData["transactions"], dat
   return transactions.filter((transaction) => transaction.date.startsWith(monthPrefix));
 }
 
+function byRecency(left: TimelineData["transactions"][number], right: TimelineData["transactions"][number]) {
+  return right.date.localeCompare(left.date) || right.createdAt.localeCompare(left.createdAt);
+}
+
 function sumTransactions(transactions: TimelineData["transactions"], type: MoneyMode) {
   return transactions
     .filter((transaction) => transaction.type === type)
     .reduce((total, transaction) => total + transaction.amount, 0);
-}
-
-function getWeekDays(date: string) {
-  const selected = new Date(`${date}T00:00:00`);
-  const mondayOffset = (selected.getDay() + 6) % 7;
-  const monday = new Date(selected);
-  monday.setDate(selected.getDate() - mondayOffset);
-
-  return Array.from({ length: 7 }, (_, index) => {
-    const day = new Date(monday);
-    day.setDate(monday.getDate() + index);
-    const dayOfMonth = day.getDate();
-    const dateValue = formatDateInputValue(day);
-
-    return {
-      date: dateValue,
-      dayOfMonth,
-      weekday: weekDayLabels[index],
-    };
-  });
 }
 
 function getMonthPickerDays(date: string) {
@@ -1251,6 +1447,10 @@ function formatReadableDate(date: string) {
   return new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric" }).format(
     new Date(`${date}T00:00:00`),
   );
+}
+
+function formatShortDate(date: string) {
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short" }).format(new Date(`${date}T00:00:00`));
 }
 
 function formatRupees(amount: number) {

@@ -57,7 +57,10 @@ export async function deleteTimelineGoal(goalId: string) {
 }
 
 export async function deleteTimelineTask(taskId: string) {
-  await anchorDatabase.tasks.delete(taskId);
+  await anchorDatabase.transaction("rw", anchorDatabase.tasks, async () => {
+    const childIds = await anchorDatabase.tasks.filter((task) => task.parentId === taskId).primaryKeys();
+    await anchorDatabase.tasks.bulkDelete([taskId, ...childIds]);
+  });
 }
 
 export async function deleteTimelineHabit(habitId: string) {

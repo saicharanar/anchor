@@ -19,6 +19,7 @@ export type TimelineTask = {
   date: string;
   completedAt?: string;
   goalId?: string;
+  parentId?: string;
   tags: string[];
   createdAt: string;
   updatedAt: string;

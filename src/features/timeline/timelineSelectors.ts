@@ -12,13 +12,25 @@ import { formatDateInputValue } from "../../shared/utils/dates";
 const dayInMilliseconds = 86_400_000;
 
 export function getTasksForDate(tasks: TimelineTask[], date: string) {
-  return tasks.filter((task) => task.date === date).sort(sortByCreatedAt);
+  return tasks.filter((task) => !task.parentId && task.date === date).sort(sortByCreatedAt);
 }
 
 export function getOverdueTasksForDate(tasks: TimelineTask[], date: string) {
   return tasks
-    .filter((task) => task.date < date && (!task.completedAt || task.completedAt > date))
+    .filter((task) => !task.parentId && task.date < date && (!task.completedAt || task.completedAt > date))
     .sort(sortByCreatedAt);
+}
+
+export function getSubtasks(tasks: TimelineTask[], parentId: string) {
+  return tasks.filter((task) => task.parentId === parentId).sort(sortByCreatedAt);
+}
+
+export function isTaskComplete(task: TimelineTask, subtasks: TimelineTask[]) {
+  if (subtasks.length === 0) {
+    return Boolean(task.completedAt);
+  }
+
+  return subtasks.every((subtask) => Boolean(subtask.completedAt));
 }
 
 export function getOverdueDayCount(taskDate: string, referenceDate: string) {

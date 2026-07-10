@@ -19,6 +19,7 @@ export const timelineTaskSchema = z.object({
   date: z.string(),
   completedAt: z.string().optional(),
   goalId: z.string().optional(),
+  parentId: z.string().optional(),
   tags: z.array(z.string()),
   createdAt: z.string(),
   updatedAt: z.string(),

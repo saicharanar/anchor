@@ -144,7 +144,12 @@ export const useAnchorStore = create<AnchorStoreState>((set, get) => ({
   removeTask: async (taskId) => {
     await deleteTimelineTask(taskId);
     const timeline = get().timeline;
-    set({ timeline: { ...timeline, tasks: timeline.tasks.filter((task) => task.id !== taskId) } });
+    set({
+      timeline: {
+        ...timeline,
+        tasks: timeline.tasks.filter((task) => task.id !== taskId && task.parentId !== taskId),
+      },
+    });
   },
 
   removeHabit: async (habitId) => {
